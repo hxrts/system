@@ -76,17 +76,11 @@
     fingersMap = [ 0 0 0 ];
     buttonsMap = [ 1 3 2 ];
     additionalOptions = ''
-      Option "TapButton1" "1"
-      Option "TapButton2" "3"
-      Option "TapButton3" "2"
       Option "VertScrollDelta" "-150"
       Option "HorizScrollDelta" "-150"
       Option "AccelerationProfile" "2"
       Option "ConstantDeceleration" "4"
       Option "LockedDrags" "1"
-      Option "TapButton1" "0"
-      Option "TapButton2" "0"
-      Option "TapButton3" "0"
     '';
   };
 
