@@ -327,7 +327,7 @@
       source-serif-pro
     ];
     fontconfig.defaultFonts = {
-      monospace = [ "Iosevka Tyle Light" ];
+      monospace = [ "Iosevka Type Light" ];
       sansSerif = [ "Source Sans Pro" ];
       serif     = [ "Source Serif Pro" ];
     };
