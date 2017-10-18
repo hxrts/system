@@ -57,32 +57,52 @@
   services.xserver.enable = true;
   services.xserver.desktopManager.gnome3.enable = true;
   #services.xserver.desktopManager.gdm.enable = true;
+  #services.xserver.displayManager.sddm.enable = true;
+  #services.xserver.desktopManager.plasma5.enable = true;
+
 
   #------
   # I / O
   #------
 
-  services.xserver.libinput.enable = false;
-  services.xserver.synaptics = {
-    enable = true;
-    tapButtons = true;
-    vertTwoFingerScroll = true;
-    horizTwoFingerScroll = true;
-    palmDetect = false;
-    minSpeed = "1";
-    maxSpeed = "1";
-    accelFactor = "2";
-    vertEdgeScroll = false;
-    fingersMap = [ 0 0 0 ];
-    buttonsMap = [ 1 3 2 ];
-    additionalOptions = ''
-      Option "VertScrollDelta" "-150"
-      Option "HorizScrollDelta" "-150"
-      Option "AccelerationProfile" "2"
-      Option "ConstantDeceleration" "4"
-      Option "LockedDrags" "1"
-    '';
-  };
+  services.xserver.libinput.enable = true;
+  services.xserver.libinput.tapping = true;
+  services.xserver.libinput.clickMethod = "clickfinger";
+  services.xserver.libinput.naturalScrolling = true;
+  services.xserver.libinput.tappingDragLock = false;
+  services.xserver.libinput.horizontalScrolling = true;
+  services.xserver.libinput.scrollMethod = "twofinger";
+  services.xserver.libinput.sendEventsMode = "enabled";
+
+
+  services.xserver.libinput.accelSpeed = "1.2";
+  services.xserver.libinput.accelProfile = "adaptive";
+  #services.xserver.libinput.accelProfile = "flat";
+
+  #services.xserver.libinput.calibrationMatrix
+
+#  services.xserver.synaptics = {
+#    enable = true;
+#    tapButtons = true;
+#    twoFingerScroll = true;
+#    vertEdgeScroll = false;
+#    vertTwoFingerScroll = true;
+#    horizTwoFingerScroll = true;
+#    palmDetect = false;
+#    minSpeed = "0.6";
+#    maxSpeed = "1.5";
+#    accelFactor = "0.015";
+#    vertEdgeScroll = false;
+#    fingersMap = [ 0 0 0 ];
+#    buttonsMap = [ 1 3 2 ];
+#    additionalOptions = ''
+#      Option "VertScrollDelta" "-150"
+#      Option "HorizScrollDelta" "-150"
+#      Option "AccelerationProfile" "2"
+#      Option "ConstantDeceleration" "4"
+#      Option "LockedDrags" "1"
+#    '';
+#  };
 
 # Option "FingerLow" "50"
 # Option "EmulateTwoFingerMinZ" "40"
@@ -91,6 +111,7 @@
 # Option "CoastingFriction" "20"
 # Option "MaxTapTime" "150"
 
+  hardware.trackpoint.speed = 280;
   services.xserver.multitouch.enable = true;
   services.xserver.multitouch.invertScroll = true;
 
@@ -133,11 +154,14 @@
 
   environment.sessionVariables = {
     EDITOR = "vim";
-    GDK_PIXBUF_MODULE_FILE = "$(echo ${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/*/loaders.cache)";
+    #GDK_PIXBUF_MODULE_FILE = "$(echo ${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/*/loaders.cache)";
   };
 
   programs.bash.enableCompletion = true;
   # programs.gnupg.agent = { enable = true; enableSSHSupport = true; };
+
+  # emacs prompt
+  #programs.bash.promptInit = "PS1=\"# \"";
 
   #---------
   # packages
@@ -155,12 +179,14 @@
       rWrapper # https://github.com/NixOS/nixpkgs/tree/master/pkgs/development/r-modules
 
       # X
+      libinput
       xlibs.xmessage
       xorg.xorgserver
       xorg-rgb
+      xorg.xf86inputlibinput
       xorg.xorgcffiles
-      xorg_sys_opengl
       xorg.xorgsgmldoctools
+      xorg_sys_opengl
 
       # navigation
       albert
@@ -177,24 +203,36 @@
       pass
 
       # crypto
+      gnupg1
       solc
 
       # media
+      audacity
       blender
       gimp
       imagemagick
       inkscape
+      lame.lib
+      picard
+      rtorrent
       vlc
+      youtube-dl
 
       # term
+      automake
       binutils
+      cmake
       coreutils
+      gcc_debug
+      gnum4
       file
       gitAndTools.gitFull
       gitAndTools.tig
       htop
       jq
       man
+      libtool
+      nfs-utils
       sudo
       tmux
       tree
@@ -205,9 +243,11 @@
 
       # emulation
       wine
+      urbit
 
       # web
       chromium
+      #(chromium.override { enablePepperFlash = true; })
       chrome-gnome-shell
       drive
       dropbox-cli
@@ -216,6 +256,8 @@
       ipfs
       mosh
       netcat
+      nodejs
+      npm2nix
       selenium-server-standalone
       sshfsFuse
       styx
@@ -226,6 +268,7 @@
 
       # txt
       ascii
+      aspell
       emojione
       corefonts
       ghostscript
@@ -237,11 +280,13 @@
       xfontsel
       xlsfonts
       xpdf
+      #zathura
 
       # gnome
       arc-icon-theme
       arc-theme
-      # gnome3.gdm
+      font-manager
+      gnome3.gdm
       gnome3.gnome-characters
       gnome3.gnome-nettool
       gnome3.gnome-screenshot
@@ -251,10 +296,22 @@
       gtk-engine-murrine
       gtk_engines
       paper-icon-theme
+      rhythmbox
+
+      # kde
+      #kdeplasma-addons
+      #latte-dock
+      #plasma5.kdecoration
+      #plasma5.khotkeys
+      #plasma5.systemsettings
+      #plasma-workspace
+      #kde-gtk-config
+      #kdeFrameworks.kiconthemes
 
       # nix
       cabal2nix
       nix-prefetch-git
+      nix-prefetch-scripts
       nix-repl
       nixops
       nox
@@ -281,6 +338,7 @@
     #enablePepperFlash = true;
     enablePepperPDF = true;
   };
+
 
   #------
   # users

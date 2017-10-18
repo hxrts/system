@@ -53,6 +53,7 @@
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(all-the-icons
+                                      fringe-helper
                                       solaire-mode)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -251,6 +252,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
 
 (defun dotspacemacs/user-config ()
 
+
   (setq inhibit-startup-screen t)
   (setq inhibit-startup-message t)
   (when (string= "*scratch*" (buffer-name))
@@ -269,7 +271,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq neo-banner-message nil)
   (setq neo-mode-line-type 'none)
 
-  (after! neotree
+  (with-eval-after-load 'neotree
           (defun neotree-fix-popup ()
             "Ensure the fringe settings are maintained on popup restore."
             (neo-global--when-window
@@ -288,46 +290,47 @@ before packages are loaded. If you are unsure, you should try in setting them in
 
   ;; nicer code-folding overlays (with fringe indicators)
   (setq hs-set-up-overlay
-        (lambda (ov)
-          (when (eq 'code (overlay-get ov 'hs))
-            (when (featurep 'vimish-fold)
-              (overlay-put
-               ov 'before-string
-               (propertize "…" 'display
-                           (list vimish-fold-indication-mode
-                                 'empty-line
-                                 'vimish-fold-fringe))))
-            (overlay-put
-             ov 'display (propertize "  [...]  " 'face '+doom-folded-face)))))
+    (lambda (ov)
+      (when (eq 'code (overlay-get ov 'hs))
+        (when (featurep 'vimish-fold)
+          (overlay-put
+           ov 'before-string
+           (propertize "…" 'display
+                       (list vimish-fold-indication-mode
+                             'empty-line
+                             'vimish-fold-fringe))))
+        (overlay-put
+         ov 'display (propertize "  [...]  " 'face '+doom-folded-face)))))
 
-  ;; NOTE Adjust these bitmaps if you change `doom-fringe-size'
-  (after! flycheck
-          ;; because git-gutter is in the left fringe
-          (setq flycheck-indication-mode 'right-fringe)
-          ;; A non-descript, left-pointing arrow
-          (fringe-helper-define 'flycheck-fringe-bitmap-double-arrow 'center
-            "...X...."
-            "..XX...."
-            ".XXX...."
-            "XXXX...."
-            ".XXX...."
-            "..XX...."
-            "...X...."))
+  (with-eval-after-load 'flycheck
+    (require 'fringe-helper)
+    ;; because git-gutter is in the left fringe
+    (setq flycheck-indication-mode 'right-fringe)
+    ;; A non-descript, left-pointing arrow
+    (fringe-helper-define 'flycheck-fringe-bitmap-double-arrow 'center
+      "...X...."
+      "..XX...."
+      ".XXX...."
+      "XXXX...."
+      ".XXX...."
+      "..XX...."
+      "...X...."))
 
   ;; diff indicators in the fringe
-  (after! git-gutter-fringe
-          ;; places the git gutter outside the margins.
-          (setq-default fringes-outside-margins t)
-          ;; thin fringe bitmaps
-          (fringe-helper-define 'git-gutter-fr:added '(center repeated)
-            "XXX.....")
-          (fringe-helper-define 'git-gutter-fr:modified '(center repeated)
-            "XXX.....")
-          (fringe-helper-define 'git-gutter-fr:deleted 'bottom
-            "X......."
-            "XX......"
-            "XXX....."
-            "XXXX...."))
+  (with-eval-after-load 'git-gutter-fringe
+    (require 'fringe-helper)
+    ;; places the git gutter outside the margins.
+    (setq-default fringes-outside-margins t)
+    ;; thin fringe bitmaps
+    (fringe-helper-define 'git-gutter-fr:added '(center repeated)
+      "XXX.....")
+    (fringe-helper-define 'git-gutter-fr:modified '(center repeated)
+      "XXX.....")
+    (fringe-helper-define 'git-gutter-fr:deleted 'bottom
+      "X......."
+      "XX......"
+      "XXX....."
+      "XXXX...."))
 
   ;; brighten buffers (that represent real files)
   (add-hook 'after-change-major-mode-hook #'turn-on-solaire-mode)
@@ -341,12 +344,23 @@ before packages are loaded. If you are unsure, you should try in setting them in
 
   (setq rainbow-mode t)
 
+  ;;--------
   ;; clojure
+  ;;--------
+
   (setq clojure-enable-fancify-symbols t)
 
   (setq explicit-shell-file-name "/bin/bash")
   (setq neo-smart-open t)
   (setq cider-repl-use-pretty-printing t)
+
+
+  ;;-----
+  ;; keys
+  ;;-----
+
+  (load-file "/home/hxrts/system/emacs/keys.el")
+
 )
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -364,3 +378,23 @@ before packages are loaded. If you are unsure, you should try in setting them in
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(defun dotspacemacs/emacs-custom-settings ()
+  "Emacs custom settings.
+This is an auto-generated function, do not modify its content directly, use
+Emacs customize menu instead.
+This function is called at the very end of Spacemacs initialization."
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (impatient-mode simple-httpd add-node-modules-path nix-mode helm-nixos-options company-nixos-options nixos-options helm-ext slack emojify circe oauth2 websocket rainbow-mode rainbow-identifiers color-identifiers-mode solaire-mode yapfify yaml-mode web-mode vimrc-mode tagedit sql-indent slime-company slime slim-mode scss-mode sass-mode reveal-in-osx-finder pyvenv pytest pyenv-mode py-isort pug-mode psci purescript-mode psc-ide pip-requirements pbcopy pandoc-mode ox-pandoc osx-trash osx-dictionary org-ref pdf-tools key-chord ivy nlinum-relative nlinum nginx-mode magit-gh-pulls live-py-mode less-css-mode launchctl intero hy-mode dash-functional hlint-refactor hindent helm-pydoc helm-hoogle helm-css-scss helm-bibtex parsebib haskell-snippets haml-mode gmail-message-mode ham-mode html-to-markdown github-search github-clone github-browse-file gist gh marshal logito pcache ht flymd flycheck-haskell emoji-cheat-sheet-plus emmet-mode edit-server dockerfile-mode docker json-mode tablist docker-tramp json-snatcher json-reformat dactyl-mode cython-mode company-web web-completion-data company-ghci company-ghc ghc haskell-mode company-emoji company-cabal company-auctex company-anaconda common-lisp-snippets cmm-mode clojure-snippets clj-refactor inflections edn multiple-cursors paredit peg cider-eval-sexp-fu cider seq queue clojure-mode biblio biblio-core auctex anaconda-mode pythonic adoc-mode markup-faces xterm-color unfill smeargle shell-pop orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help diff-hl company-statistics company auto-yasnippet yasnippet auto-dictionary ac-ispell auto-complete ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async org-plus-contrib evil-unimpaired f s dash))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+)
