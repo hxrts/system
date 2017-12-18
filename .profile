@@ -18,17 +18,32 @@ export PATH="$PATH:$HOME/bin"
 # app aliases & defaults
 #-----------------------
 
-# tree coloring
+<<<<<<< HEAD
 alias tree="tree -C"
-
-#------------------
-# platfom targeting
-#------------------
-
-#export CLICOLOR=1
-#export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+=======
+alias tree='tree -C'
+>>>>>>> arrange files by function
 alias ls='ls -ha --color=auto'
+alias open='gnome-open'
+alias grep='grep --color'
+alias nix-search='nix-env -qa | grep'
+<<<<<<< HEAD
 
+#--------
+# haskell
+#--------
+
+=======
+
+function volume { pactl -- set-sink-volume 0 $1'%'; }
+
+#--------
+# haskell
+#--------
+
+>>>>>>> arrange files by function
+alias haskpkgs='nix-env -f "<nixpkgs>" -qaP -A haskellPackages'
+export PATH="$PATH:$HOME/.cabal/bin"
 
 #----
 # ssh
@@ -40,17 +55,23 @@ export SSH_KEY_PATH='~/.ssh/id_rsa'
 # remote locations
 #-----------------
 
-# hxrts alias
-alias terra='mosh hxrts@terra.hxrts.com'
-alias juno='ssh admin@juno.hxrts.com'
-alias io='mosh hxrts@192.241.143.63'
+# terra > mosh hxrts@terra.hxrts.com'
+alias terra='terra.hxrts.com'
+export terra='terra.hxrts.com'
+
+# juno > ssh admin@juno.hxrts.com'
+alias juno='juno.hxrts.com'
+export juno='juno.hxrts.com'
+
+# io > mosh root@165.227.91.157
+alias io='165.227.91.157'
+export io='165.227.91.157'
+
+# supertemporal >
 alias supertemporal='ssh -i ~/.ssh/supertemporal_id_rsa hxrts@supertempor.al'
 
-# lab aliases
+# hal > ssh -i ~/.ssh/id_rsa bermans@hal.cbio.mskcc.org
 alias hal='ssh -i ~/.ssh/id_rsa bermans@hal.cbio.mskcc.org'
-alias saba='ssh -i ~/.ssh/saba.private bermans@saba2.cbio.mskcc.org'
-alias ika='ssh -i ~/.ssh/saba.private bermans@ika.cbio.mskcc.org'
-
 
 #-----
 # tmux
@@ -60,4 +81,3 @@ if [[ $(ps -e | grep -v "grep" | grep -q tmux) && "$TERM" != "dumb" ]]; then
 	echo "";
 	tmux ls;
 fi
-

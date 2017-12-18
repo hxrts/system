@@ -1,1 +1,6 @@
+<<<<<<< HEAD
 .DS_Store
+emacs/keys.el
+=======
+keys/*
+>>>>>>> arrange files by function

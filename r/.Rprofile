@@ -29,13 +29,25 @@ libs <- function() {
     suppressPackageStartupMessages(library(data.table))
 
     # main packages
-    pacman::p_load( devtools,                                                         # utils
-                    colorout, crayon, colorspace, RColorBrewer,                       # coloring
-                    rlist,                                                            # working
-                    openxlsx, readr,                                                  # IO
-                    ggplot2, grid, gridExtra, scales,                                 # plotting
-                    lazyeval, tibble, dplyr, tidyr, magrittr, stringr, purrr, broom,  # dplyr
-                    matrixStats)                                                      # matrix manipulation
+    #library(crayon)
+    library(colorspace)
+    library(RColorBrewer)
+    #library(rlist)
+    #library(openxlsx)
+    #library(tidyxl)
+    library(ggplot2)
+    #library(gridExtra)
+    library(scales)
+    library(lazyeval)
+    #library(tidyverse)
+    #library(dplyr)
+    library(stringr)
+    library(tidyr)
+    library(ggplot2)
+    library(purrr)
+    library(tibble)
+    library(broom)
+    library(matrixStats)
 }
 
 

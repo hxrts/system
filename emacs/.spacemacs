@@ -8,7 +8,10 @@
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
    dotspacemacs-configuration-layer-path '()
    dotspacemacs-configuration-layers
-   '(auto-completion
+    '((auto-completion :variables
+                       auto-completion-enable-snippets-in-popup t
+                       auto-completion-enable-help-tooltip t
+                       auto-completion-enable-sort-by-usage t)
      asciidoc
      bibtex
      chrome
@@ -32,9 +35,9 @@
      pandoc
      pdf-tools
      purescript
-     ; python
+     python
      (shell :variables
-            shell-default-height 30
+            shell-default-height 33
             shell-default-position 'bottom)
      slack
      (spell-checking :variables
@@ -58,7 +61,7 @@
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '()
+   dotspacemacs-excluded-packages '(exec-path-from-shell)
    dotspacemacs-install-packages 'used-but-keep-unused))
 
 (defun dotspacemacs/init ()
@@ -67,6 +70,10 @@ This function is called at the very startup of Spacemacs initialization
 before layers configuration."
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
+
+  (setq configuration-layer-elpa-archives '(("melpa" . "melpa.org/packages/")
+                                            ("org"   . "orgmode.org/elpa/")
+                                            ("gnu"   . "elpa.gnu.org/packages/"))) ;; http://elpa.gnu.org/packages/
   (setq-default
    dotspacemacs-elpa-https nil
    dotspacemacs-elpa-timeout 5
@@ -83,7 +90,7 @@ before layers configuration."
    ;; `spacemacs-buffer-startup-lists-length' takes effect.
    dotspacemacs-startup-lists nil
    ;; True if the home buffer should respond to resize events.
-   dotspacemacs-startup-buffer-responsive nil
+   dotspacemacs-startup-buffer-responsive t
    ;; Default major mode of the scratch buffer (default `text-mode')
    dotspacemacs-scratch-mode 'text-mode
    ;; List of themes, the first of the list is loaded when spacemacs starts.
@@ -243,24 +250,22 @@ before layers configuration."
 
 (defun dotspacemacs/user-init ()
   "Initialization function for user code.
-It is called immediately after `dotspacemacs/init', before layer configuration
-executes.
- This function is mostly useful for variables that need to be set
-before packages are loaded. If you are unsure, you should try in setting them in
-`dotspacemacs/user-config' first."
+Called immediately after `dotspacemacs/init', before layer configuration
+executes and packages are loaded."
+  (setq exec-path-from-shell-arguments '("-l"))
+
   )
 
 (defun dotspacemacs/user-config ()
-
 
   (setq inhibit-startup-screen t)
   (setq inhibit-startup-message t)
   (when (string= "*scratch*" (buffer-name))
     (spacemacs/switch-to-scratch-buffer))
 
-
   ;; powerline
   (setq powerline-default-separator 'slant)
+
   ;; doom settings
   (setq doom-themes-enable-bold t)
   (setq doom-themes-enable-italic t)
@@ -272,11 +277,11 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq neo-mode-line-type 'none)
 
   (with-eval-after-load 'neotree
-          (defun neotree-fix-popup ()
-            "Ensure the fringe settings are maintained on popup restore."
-            (neo-global--when-window
-             (doom--neotree-no-fringes)))
-          (add-hook 'doom-popup-mode-hook #'neotree-fix-popup))
+    (defun neotree-fix-popup ()
+      "Ensure the fringe settings are maintained on popup restore."
+      (neo-global--when-window
+       (doom--neotree-no-fringes)))
+    (add-hook 'doom-popup-mode-hook #'neotree-fix-popup))
 
   ;; doom org mode
   (doom-themes-org-config)
@@ -342,7 +347,25 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (add-hook 'minibuffer-setup-hook #'solaire-mode-in-minibuffer)
   (solaire-mode-swap-bg)
 
+  ;; theme modifications
+  ;(custom-theme-set-faces
+  ; 'doom-one
+  ; '(font-lock-comment-face ((t (:foreground "#DFAF8F"))))
+  ; '(font-lock-comment-delimiter-face ((t (:foreground "#DFAF8F")))))
+
   (setq rainbow-mode t)
+
+  (recentf-mode 1)
+  (run-at-time (current-time) 300 'recentf-save-list)
+
+  ;;---------
+  ;; snippets
+  ;;---------
+
+  ;(setq yas-snippet-dirs
+  ;      '("~/.emacs.d/snippets"))
+
+  (yas-global-mode)
 
   ;;--------
   ;; clojure
@@ -353,6 +376,26 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (setq explicit-shell-file-name "/bin/bash")
   (setq neo-smart-open t)
   (setq cider-repl-use-pretty-printing t)
+
+  ;;-----------
+  ;; javascript
+  ;;-----------
+
+  (setq js-indent-level 2)
+  (setq-default indent-tabs-mode nil)
+
+
+  ;;-------------
+  ;; nix settings
+  ;;-------------
+
+  (require 'package)
+
+  ;; optional. makes unpure packages archives unavailable
+  (setq package-archives nil)
+
+  (setq package-enable-at-startup nil)
+  (package-initialize)
 
 
   ;;-----
@@ -390,7 +433,7 @@ This function is called at the very end of Spacemacs initialization."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (impatient-mode simple-httpd add-node-modules-path nix-mode helm-nixos-options company-nixos-options nixos-options helm-ext slack emojify circe oauth2 websocket rainbow-mode rainbow-identifiers color-identifiers-mode solaire-mode yapfify yaml-mode web-mode vimrc-mode tagedit sql-indent slime-company slime slim-mode scss-mode sass-mode reveal-in-osx-finder pyvenv pytest pyenv-mode py-isort pug-mode psci purescript-mode psc-ide pip-requirements pbcopy pandoc-mode ox-pandoc osx-trash osx-dictionary org-ref pdf-tools key-chord ivy nlinum-relative nlinum nginx-mode magit-gh-pulls live-py-mode less-css-mode launchctl intero hy-mode dash-functional hlint-refactor hindent helm-pydoc helm-hoogle helm-css-scss helm-bibtex parsebib haskell-snippets haml-mode gmail-message-mode ham-mode html-to-markdown github-search github-clone github-browse-file gist gh marshal logito pcache ht flymd flycheck-haskell emoji-cheat-sheet-plus emmet-mode edit-server dockerfile-mode docker json-mode tablist docker-tramp json-snatcher json-reformat dactyl-mode cython-mode company-web web-completion-data company-ghci company-ghc ghc haskell-mode company-emoji company-cabal company-auctex company-anaconda common-lisp-snippets cmm-mode clojure-snippets clj-refactor inflections edn multiple-cursors paredit peg cider-eval-sexp-fu cider seq queue clojure-mode biblio biblio-core auctex anaconda-mode pythonic adoc-mode markup-faces xterm-color unfill smeargle shell-pop orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help diff-hl company-statistics company auto-yasnippet yasnippet auto-dictionary ac-ispell auto-complete ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async org-plus-contrib evil-unimpaired f s dash))))
+    (company-quickhelp nix-mode helm-nixos-options company-nixos-options nixos-options helm-ext slack emojify circe oauth2 websocket rainbow-mode rainbow-identifiers color-identifiers-mode solaire-mode yapfify yaml-mode web-mode vimrc-mode tagedit sql-indent slime-company slime slim-mode scss-mode sass-mode reveal-in-osx-finder pyvenv pytest pyenv-mode py-isort pug-mode psci purescript-mode psc-ide pip-requirements pbcopy pandoc-mode ox-pandoc osx-trash osx-dictionary org-ref pdf-tools key-chord ivy nlinum-relative nlinum nginx-mode magit-gh-pulls live-py-mode less-css-mode launchctl intero hy-mode dash-functional hlint-refactor hindent helm-pydoc helm-hoogle helm-css-scss helm-bibtex parsebib haskell-snippets haml-mode gmail-message-mode ham-mode html-to-markdown github-search github-clone github-browse-file gist gh marshal logito pcache ht flymd flycheck-haskell emoji-cheat-sheet-plus emmet-mode edit-server dockerfile-mode docker json-mode tablist docker-tramp json-snatcher json-reformat dactyl-mode cython-mode company-web web-completion-data company-ghci company-ghc ghc haskell-mode company-emoji company-cabal company-auctex company-anaconda common-lisp-snippets cmm-mode clojure-snippets clj-refactor inflections edn multiple-cursors paredit peg cider-eval-sexp-fu cider seq queue clojure-mode biblio biblio-core auctex anaconda-mode pythonic adoc-mode markup-faces xterm-color unfill smeargle shell-pop orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help diff-hl company-statistics company auto-yasnippet yasnippet auto-dictionary ac-ispell auto-complete ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async org-plus-contrib evil-unimpaired f s dash))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
