@@ -19,14 +19,19 @@ export PATH="$PATH:$HOME/bin"
 #-----------------------
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 alias tree="tree -C"
 =======
 alias tree='tree -C'
 >>>>>>> arrange files by function
+=======
+alias tree='tree -C'
+>>>>>>> bdb3cfd... arrange files by function
 alias ls='ls -ha --color=auto'
 alias open='gnome-open'
 alias grep='grep --color'
 alias nix-search='nix-env -qa | grep'
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 #--------
@@ -42,6 +47,15 @@ function volume { pactl -- set-sink-volume 0 $1'%'; }
 #--------
 
 >>>>>>> arrange files by function
+=======
+
+function volume { pactl -- set-sink-volume 0 $1'%'; }
+
+#--------
+# haskell
+#--------
+
+>>>>>>> bdb3cfd... arrange files by function
 alias haskpkgs='nix-env -f "<nixpkgs>" -qaP -A haskellPackages'
 export PATH="$PATH:$HOME/.cabal/bin"
 
