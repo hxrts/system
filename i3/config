@@ -152,20 +152,14 @@ bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcu
 bindsym $mod+r mode "resize"
 
 mode "resize" {
-        # bindings trigger upon entering resize mode
-        bindsym h resize shrink width 5 px or 5 ppt
-        bindsym j resize grow height 5 px or 5 ppt
-        bindsym k resize shrink height 5 px or 5 ppt
-        bindsym l resize grow width 5 px or 5 ppt
 
-        # same bindings, but for the arrow keys
-        bindsym Left resize shrink width 5 px or 5 ppt
-        bindsym Down resize grow height 5 px or 5 ppt
-        bindsym Up resize shrink height 5 px or 5 ppt
-        bindsym Right resize grow width 5 px or 5 ppt
+        # bindings trigger upon entering resize mode
+        bindsym h resize shrink width  2 px or 2 ppt
+        bindsym j resize grow   height 2 px or 2 ppt
+        bindsym k resize shrink height 2 px or 2 ppt
+        bindsym l resize grow   width  2 px or 2 ppt
 
         # back to normal mode
-        bindsym Return mode "default"
         bindsym Escape mode "default"
 }
 
@@ -194,8 +188,8 @@ for_window [class="^.*"] border pixel 2
 new_window 1pixel
 
 # brightness
-bindsym XF86MonBrightnessUp exec xbacklight -inc 20 # increase screen brightness
-bindsym XF86MonBrightnessDown exec xbacklight -dec 20 # decrease screen brightness
+bindsym XF86MonBrightnessUp   exec xbacklight -inc 10 # increase screen brightness
+bindsym XF86MonBrightnessDown exec xbacklight -dec 10 # decrease screen brightness
 
 # keyboard settings
 exec "setxkbmap -option ctrl:nocaps"
