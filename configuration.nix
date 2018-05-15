@@ -311,12 +311,6 @@
       gutenprintBin
       mfcj470dw-cupswrapper
 
-      # window management
-      dmenu
-      rofi-unwrapped
-      rofi-pass
-      compton
-
       # communication
       signal-desktop
       skype
@@ -442,9 +436,9 @@
       xlsfonts
       xpdf
 
-      #lightdm
-      #lightdm_qt
-      #lightdm_gtk_greeter
+      # emacs
+      emacs
+      emacs-all-the-icons-fonts
 
       # gnome
       lxappearance
@@ -472,18 +466,22 @@
       xorg.xinput
       xinput_calibrator
 
-      # emacs
-      emacs
-      emacs-all-the-icons-fonts
+      #lightdm
+      #lightdm_qt
+      #lightdm_gtk_greeter
 
       # window & file management
       arandr
       conky
+      compton
+      dmenu
       gnome2.pango  # i3 text rendering
       i3-gaps
       i3blocks-gaps
       i3lock-fancy
       polybar
+      rofi-unwrapped
+      rofi-pass
       xfce.thunar
       xfce.thunar-dropbox-plugin
 
