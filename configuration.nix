@@ -203,7 +203,6 @@
 
   networking.hostName              = "earth";
   networking.networkmanager.enable = true;
-  networking.networkmanager.packages = [ pkgs.networkmanagerapplet ];
 
   networking.firewall =
   {
@@ -412,15 +411,12 @@
       mosh
       netcat
       networkmanager
-      networkmanagerapplet
       sshfsFuse
       styx
       tor
       torbrowser
       wget
-      wicd # command line network manager
       yarn
-      xfce.thunar-dropbox-plugin
 
       # node
       nodejs
@@ -434,7 +430,7 @@
       aspell
       aspellDicts.en
       emojione
-      evince
+      evince  # pdf reader
       corefonts
       ghostscript
       ibus-engines.uniemoji
@@ -480,14 +476,16 @@
       emacs
       emacs-all-the-icons-fonts
 
-      # window management
+      # window & file management
       arandr
       conky
+      gnome2.pango  # i3 text rendering
       i3-gaps
       i3blocks-gaps
       i3lock-fancy
       polybar
       xfce.thunar
+      xfce.thunar-dropbox-plugin
 
       # nix
       nix-prefetch-git
