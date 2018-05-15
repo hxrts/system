@@ -3,15 +3,19 @@
 (defun dotspacemacs/layers ()
   (setq-default
    dotspacemacs-distribution 'spacemacs
-   dotspacemacs-enable-lazy-installation 'all
+   dotspacemacs-enable-lazy-installation 'unused
    dotspacemacs-ask-for-lazy-installation nil
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
    dotspacemacs-configuration-layer-path '()
    dotspacemacs-configuration-layers
-    '((auto-completion :variables
-                       auto-completion-enable-snippets-in-popup t
-                       auto-completion-enable-help-tooltip t
-                       auto-completion-enable-sort-by-usage t)
+   '((
+      python
+      ;python
+      auto-completion :variables
+                      auto-completion-enable-snippets-in-popup t
+                      auto-completion-enable-help-tooltip t)
+     (haskell         :variables
+                      haskell-completion-backend 'ghc-mod)
      asciidoc
      bibtex
      chrome
@@ -19,29 +23,33 @@
      common-lisp
      colors
      docker
+     ess
      emacs-lisp
      emoji
      git
      github
-     haskell
      html
      helm
+     javascript
      latex
      markdown
      nginx
      nlinum
      org
      nixos
-     pandoc
+     ;pandoc
      pdf-tools
      purescript
-     python
+     ;python
+     ranger
+     rust
      (shell :variables
             shell-default-height 33
-            shell-default-position 'bottom)
+            shell-default-position 'bottom
+            shell-default-full-span nil)
      slack
      (spell-checking :variables
-                       spell-checking-enable-by-default nil)
+                     spell-checking-enable-by-default nil)
      sql
      syntax-checking
      theming
@@ -49,19 +57,24 @@
      (version-control :variables
                        version-control-global-margin t)
      vimscript
-     yaml
-     )
+     yaml)
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(all-the-icons
+                                      exec-path-from-shell
+                                      evil-mc
                                       fringe-helper
-                                      solaire-mode)
+                                      solaire-mode
+                                      company-math
+                                      (stylus-mode :location
+                                                   (recipe :fetcher
+                                                    github :repo "vladh/stylus-mode")))
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '(exec-path-from-shell)
+   ;dotspacemacs-excluded-packages '(exec-path-from-shell)
    dotspacemacs-install-packages 'used-but-keep-unused))
 
 (defun dotspacemacs/init ()
@@ -71,9 +84,12 @@ before layers configuration."
   ;; This setq-default sexp is an exhaustive list of all the supported
   ;; spacemacs settings.
 
-  (setq configuration-layer-elpa-archives '(("melpa" . "melpa.org/packages/")
-                                            ("org"   . "orgmode.org/elpa/")
-                                            ("gnu"   . "elpa.gnu.org/packages/"))) ;; http://elpa.gnu.org/packages/
+;  (setq configuration-layer-elpa-archives '(("melpa"     . "http://melpa.org/packages/")
+;                                            ("marmalade" . "http://marmalade-repo.org/packages/")
+;                                            ("org"       . "http://orgmode.org/elpa/")
+;                                            ("gnu"       . "http://elpa.gnu.org/packages/")))
+
+                                           ; ("gnu"   . "elpa.zilongshanren.com/gnu/")))
   (setq-default
    dotspacemacs-elpa-https nil
    dotspacemacs-elpa-timeout 5
@@ -100,7 +116,7 @@ before layers configuration."
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Iosevka"
-                               :size 25
+                               :size 24
                                :weight regular
                                ; :width normal
                                :powerline-scale 1.2)
@@ -175,7 +191,7 @@ before layers configuration."
    dotspacemacs-loading-progress-bar nil
    ;; If non nil the frame is fullscreen when Emacs starts up. (default nil)
    ;; (Emacs 24.4+ only)
-   dotspacemacs-fullscreen-at-startup t
+   ;dotspacemacs-fullscreen-at-startup t
    ;; If non nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
    ;; Use to disable fullscreen animations in OSX. (default nil)
    dotspacemacs-fullscreen-use-non-native t
@@ -253,18 +269,29 @@ before layers configuration."
 Called immediately after `dotspacemacs/init', before layer configuration
 executes and packages are loaded."
   (setq exec-path-from-shell-arguments '("-l"))
-
+  (add-to-list 'exec-path "~/.cabal/bin/")
   )
 
 (defun dotspacemacs/user-config ()
+
+  ;;--------
+  ;; startup
+  ;;--------
 
   (setq inhibit-startup-screen t)
   (setq inhibit-startup-message t)
   (when (string= "*scratch*" (buffer-name))
     (spacemacs/switch-to-scratch-buffer))
 
+  ;;--
+  ;; UI
+  ;;---
+
+  ;; hide stationary cursor
+  (setq make-pointer-invisible t)
+
   ;; powerline
-  (setq powerline-default-separator 'slant)
+  (setq powerline-default-separator 'nil)
 
   ;; doom settings
   (setq doom-themes-enable-bold t)
@@ -286,14 +313,13 @@ executes and packages are loaded."
   ;; doom org mode
   (doom-themes-org-config)
 
-  ;; native border "consumes" a pixel of fringe on right-most splits,
-  ;; `window-divider' does not.
+  ;; native border "consumes" fringe pixel on right-most splits `window-divider' doesn't
   (setq-default window-divider-default-places t
                 window-divider-default-bottom-width 0
                 window-divider-default-right-width 1)
   (add-hook 'doom-init-ui-hook #'window-divider-mode)
 
-  ;; nicer code-folding overlays (with fringe indicators)
+  ;; code-folding overlays with fringe indicators
   (setq hs-set-up-overlay
     (lambda (ov)
       (when (eq 'code (overlay-get ov 'hs))
@@ -307,24 +333,24 @@ executes and packages are loaded."
         (overlay-put
          ov 'display (propertize "  [...]  " 'face '+doom-folded-face)))))
 
-  (with-eval-after-load 'flycheck
-    (require 'fringe-helper)
-    ;; because git-gutter is in the left fringe
-    (setq flycheck-indication-mode 'right-fringe)
-    ;; A non-descript, left-pointing arrow
-    (fringe-helper-define 'flycheck-fringe-bitmap-double-arrow 'center
-      "...X...."
-      "..XX...."
-      ".XXX...."
-      "XXXX...."
-      ".XXX...."
-      "..XX...."
-      "...X...."))
+  ;(with-eval-after-load 'flycheck
+  ;  (require 'fringe-helper)
+  ;  ;; because git-gutter is in the left fringe
+  ;  (setq flycheck-indication-mode 'right-fringe)
+  ;  ;; A non-descript, left-pointing arrow
+  ;  (fringe-helper-define 'flycheck-fringe-bitmap-double-arrow 'center
+  ;    "...X...."
+  ;    "..XX...."
+  ;    ".XXX...."
+  ;    "XXXX...."
+  ;    ".XXX...."
+  ;    "..XX...."
+  ;    "...X...."))
 
   ;; diff indicators in the fringe
   (with-eval-after-load 'git-gutter-fringe
     (require 'fringe-helper)
-    ;; places the git gutter outside the margins.
+    ;; places the git gutter outside margins
     (setq-default fringes-outside-margins t)
     ;; thin fringe bitmaps
     (fringe-helper-define 'git-gutter-fr:added '(center repeated)
@@ -355,8 +381,24 @@ executes and packages are loaded."
 
   (setq rainbow-mode t)
 
+  ;;--------
+  ;; unicode
+  ;;--------
+
+  (global-company-mode)
+
+  ;;-----------------
+  ;; default behavior
+  ;;-----------------
+
   (recentf-mode 1)
   (run-at-time (current-time) 300 'recentf-save-list)
+
+  (setq x-select-enable-clipboard t)
+  (setq vc-follow-symlinks t)
+
+  ;; multiple cursors
+  (global-evil-mc-mode  1)
 
   ;;---------
   ;; snippets
@@ -367,42 +409,131 @@ executes and packages are loaded."
 
   (yas-global-mode)
 
-  ;;--------
+  ;;------------
+  ;; programming
+  ;;------------
+
   ;; clojure
-  ;;--------
-
   (setq clojure-enable-fancify-symbols t)
-
   (setq explicit-shell-file-name "/bin/bash")
   (setq neo-smart-open t)
   (setq cider-repl-use-pretty-printing t)
 
-  ;;-----------
   ;; javascript
-  ;;-----------
-
   (setq js-indent-level 2)
   (setq-default indent-tabs-mode nil)
 
+  ;; spacing
+  (defun my-setup-indent (n)
+    ;; web development
+    (setq coffee-tab-width n) ; coffeescript
+    (setq javascript-indent-level n) ; javascript-mode
+    (setq js-indent-level n) ; js-mode
+    (setq js2-basic-offset n) ; js2-mode, in latest js2-mode, it's alias of js-indent-level
+    (setq web-mode-markup-indent-offset n) ; web-mode, html tag in html file
+    (setq web-mode-css-indent-offset n) ; web-mode, css in html file
+    (setq web-mode-code-indent-offset n) ; web-mode, js code in html file
+    (setq css-indent-offset n) ; css-mode
+    )
 
-  ;;-------------
-  ;; nix settings
-  ;;-------------
+  (my-setup-indent 2)
+
+  ;;--------
+  ;; haskell
+  ;;--------
+
+  (setq haskell-process-wrapper-function
+        (lambda (args) (apply 'nix-shell-command (nix-current-sandbox) args)))
+
+  ;;----
+  ;; nix
+  ;;----
 
   (require 'package)
 
-  ;; optional. makes unpure packages archives unavailable
+  ;; makes unpure packages archives unavailable
   (setq package-archives nil)
 
   (setq package-enable-at-startup nil)
   (package-initialize)
 
 
+  ;;------------
+  ;; keybindings
+  ;;------------
+
+  (define-key evil-normal-state-map (kbd "C-h") #'evil-window-left)
+  (define-key evil-normal-state-map (kbd "C-j") #'evil-window-down)
+  (define-key evil-normal-state-map (kbd "C-k") #'evil-window-up)
+  (define-key evil-normal-state-map (kbd "C-l") #'evil-window-right)
+
+  (define-key evil-motion-state-map (kbd "C-h") #'evil-window-left)
+  (define-key evil-motion-state-map (kbd "C-j") #'evil-window-down)
+  (define-key evil-motion-state-map (kbd "C-k") #'evil-window-up)
+  (define-key evil-motion-state-map (kbd "C-l") #'evil-window-right)
+
+  (add-hook 'term-load-hook
+    (lambda ()
+      (define-key term-raw-map (kbd "C-S-h") 'windmove-left)
+      (define-key term-raw-map (kbd "C-S-j") 'windmove-down)
+      (define-key term-raw-map (kbd "C-S-k") 'windmove-up)
+      (define-key term-raw-map (kbd "C-S-l") 'windmove-right)
+      `term-char-mode
+      ))
+
+  (spacemacs/set-leader-keys
+    "bd" 'kill-buffer-and-window)
+
+
+  ;;-------
+  ;; python
+  ;;-------
+
+  ;(eval-after-load 'python `(evil-define-key 'normal python-mode-map [f5] 'python-shell-send-buffer))
+
+  ;;----
+  ;; tex
+  ;;----
+
+  (remove-hook 'text-mode-hook 'turn-on-auto-fill)
+  (add-hook 'LaTeX-mode-hook
+            'spacemacs/toggle-auto-fill-mode-off
+            'append)
+
+  (add-hook 'LaTeX-mode-hook
+            'toggle-word-wrap
+            'append)
+  ;;----
+  ;; ess
+  ;;----
+
+  (add-hook 'ess-mode-hook
+            (lambda ()
+              (define-key ess-extra-map (kbd "C-S-h") 'windmove-left)
+              (define-key ess-extra-map (kbd "C-S-j") 'windmove-down)
+              (define-key ess-extra-map (kbd "C-S-k") 'windmove-up)
+              (define-key ess-extra-map (kbd "C-S-l") 'windmove-right)
+              `term-char-mode
+              ))
+  (setq ess-smart-S-assign-key ":")
+  (ess-toggle-S-assign nil)
+  (ess-toggle-S-assign nil)
+  (ess-toggle-underscore nil) ; leave underscore key alone!
+
+  (add-hook 'ess-help-mode-hook
+            (lambda ()
+              (define-key ess-extra-map (kbd "C-h") #'evil-window-left)
+              (define-key ess-extra-map (kbd "C-j") #'evil-window-down)
+              (define-key ess-extra-map (kbd "C-k") #'evil-window-up)
+              (define-key ess-extra-map (kbd "C-l") #'evil-window-right)
+              `term-char-mode
+              ))
+
   ;;-----
   ;; keys
   ;;-----
 
-  (load-file "/home/hxrts/system/emacs/keys.el")
+  (load-file "/home/hxrts/system/keys/keys.el")
 
 )
 ;; Do not write anything past this comment. This is where Emacs will
@@ -412,9 +543,10 @@ executes and packages are loaded."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(global-flycheck-mode t)
  '(package-selected-packages
    (quote
-    (nix-mode helm-nixos-options company-nixos-options nixos-options helm-ext slack emojify circe oauth2 websocket rainbow-mode rainbow-identifiers color-identifiers-mode solaire-mode yapfify yaml-mode web-mode vimrc-mode tagedit sql-indent slime-company slime slim-mode scss-mode sass-mode reveal-in-osx-finder pyvenv pytest pyenv-mode py-isort pug-mode psci purescript-mode psc-ide pip-requirements pbcopy pandoc-mode ox-pandoc osx-trash osx-dictionary org-ref pdf-tools key-chord ivy nlinum-relative nlinum nginx-mode magit-gh-pulls live-py-mode less-css-mode launchctl intero hy-mode dash-functional hlint-refactor hindent helm-pydoc helm-hoogle helm-css-scss helm-bibtex parsebib haskell-snippets haml-mode gmail-message-mode ham-mode html-to-markdown github-search github-clone github-browse-file gist gh marshal logito pcache ht flymd flycheck-haskell emoji-cheat-sheet-plus emmet-mode edit-server dockerfile-mode docker json-mode tablist docker-tramp json-snatcher json-reformat dactyl-mode cython-mode company-web web-completion-data company-ghci company-ghc ghc haskell-mode company-emoji company-cabal company-auctex company-anaconda common-lisp-snippets cmm-mode clojure-snippets clj-refactor inflections edn multiple-cursors paredit peg cider-eval-sexp-fu cider seq queue clojure-mode biblio biblio-core auctex anaconda-mode pythonic adoc-mode markup-faces xterm-color unfill smeargle shell-pop orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help diff-hl company-statistics company auto-yasnippet yasnippet auto-dictionary ac-ispell auto-complete ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async org-plus-contrib evil-unimpaired f s dash))))
+    (org-mime auctex-latexmk toml-mode racer flycheck-rust cargo rust-mode stylus-mode web-beautify livid-mode skewer-mode simple-httpd js2-refactor js2-mode js-doc company-tern tern coffee-mode company-math math-symbol-lists ranger ess-smart-equals ess-R-data-view ctable ess julia-mode company-quickhelp nix-mode helm-nixos-options company-nixos-options nixos-options helm-ext slack emojify circe oauth2 websocket rainbow-mode rainbow-identifiers color-identifiers-mode solaire-mode yapfify yaml-mode web-mode vimrc-mode tagedit sql-indent slime-company slime slim-mode scss-mode sass-mode reveal-in-osx-finder pyvenv pytest pyenv-mode py-isort pug-mode psci purescript-mode psc-ide pip-requirements pbcopy pandoc-mode ox-pandoc osx-trash osx-dictionary org-ref pdf-tools key-chord ivy nlinum-relative nlinum nginx-mode magit-gh-pulls live-py-mode less-css-mode launchctl intero hy-mode dash-functional hlint-refactor hindent helm-pydoc helm-hoogle helm-css-scss helm-bibtex parsebib haskell-snippets haml-mode gmail-message-mode ham-mode html-to-markdown github-search github-clone github-browse-file gist gh marshal logito pcache ht flymd flycheck-haskell emoji-cheat-sheet-plus emmet-mode edit-server dockerfile-mode docker json-mode tablist docker-tramp json-snatcher json-reformat dactyl-mode cython-mode company-web web-completion-data company-ghci company-ghc ghc haskell-mode company-emoji company-cabal company-auctex company-anaconda common-lisp-snippets cmm-mode clojure-snippets clj-refactor inflections edn multiple-cursors paredit peg cider-eval-sexp-fu cider seq queue clojure-mode biblio biblio-core auctex anaconda-mode pythonic adoc-mode markup-faces xterm-color unfill smeargle shell-pop orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-download mwim multi-term mmm-mode markdown-toc markdown-mode magit-gitflow htmlize helm-gitignore helm-company helm-c-yasnippet gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-pos-tip pos-tip flycheck evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help diff-hl company-statistics company auto-yasnippet yasnippet auto-dictionary ac-ispell auto-complete ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async org-plus-contrib evil-unimpaired f s dash))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
