@@ -4,6 +4,11 @@
 # bash init
 #----------
 
+# for tilix
+#if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
+#        source /etc/profile.d/vte.sh
+#fi
+
 # if not running interactively, continue
 [ -z "$PS1" ] && return
 

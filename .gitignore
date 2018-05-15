@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 .DS_Store
 emacs/keys.el
-=======
 keys/*
->>>>>>> arrange files by function
-=======
-keys/*
->>>>>>> bdb3cfd... arrange files by function
+*.swp

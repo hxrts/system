@@ -1,10 +1,22 @@
-{ config, pkgs, ... } : {
+{ config, pkgs, ... } :
+
+{
+
+  #--------
+  # logging
+  #--------
+
+  boot.consoleLogLevel = 2;
 
   #---------
   # hardware
   #---------
 
-  imports = [ /home/hxrts/system/hardware/hardware.nix ];
+  imports =
+  [
+    /home/hxrts/system/hardware/hardware.nix
+    #/home/hxrts/system/r/r.nix
+  ];
 
   boot.loader.grub.device = "nvme0n1p";
   boot.initrd.luks.devices =
@@ -17,6 +29,11 @@
   ];
 
   hardware.enableAllFirmware = true;
+  boot.kernelPackages = pkgs.linuxPackages_latest;  # Meltdown / Spectre patches
+  hardware.pulseaudio.enable = true;
+  hardware.pulseaudio.support32Bit = true;
+  sound.enable = true;
+  nixpkgs.config.pulseaudio = true;
 
   #------
   # clock
@@ -28,14 +45,38 @@
   # channels
   #---------
 
-  system.autoUpgrade.channel = https://nixos.org/channels/nixos-unstable;
-  # system.autoUpgrade.channel = https://nixos.org/channels/nixos-17.09;
+  nix.nixPath = [ "nixpkgs=/home/hxrts/nixpkgs" "nixos-config=/home/hxrts/system/configuration.nix" ];
+#  system.autoUpgrade.channel = https://nixos.org/channels/nixos-unstable;
+  #system.autoUpgrade.channel = https://nixos.org/channels/nixos-17.09;
 
-  system.stateVersion = "unstable";
-  # system.stateVersion = "17.09";
+#  system.stateVersion = "unstable";
+  #system.stateVersion = "17.09";
+
+
+#  "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos/nixpkgs"
+#  "nixos-config=/etc/nixos/configuration.nix"
+#
+  #  nixPath = [
+#              "nixpkgs=https://nixos.org/channels/nixos-17.09/nixexprs.tar.xz"
+#              "nixpkgs=https://nixos.org/channels/nixos-unstable/nixexprs.tar.xz"
+#              "nixos-config=/etc/nixos/configuration.nix"
+#              "r-overlays=/home/hxrts/system/r/r.nix"
+#    ];
+
+  #nix.nixPath =
+  #[
+  #  "nixpkgs=/home/hxrts/system"
+  #  "nixos-config=/etc/nixos/configuration.nix"
+  #];
+
+  #nixpkgs.overlays =
+  #[
+  #(import /home/hxrts/system/r/r.nix)
+  #];
+
 
   system.autoUpgrade.enable      = true;
-  system.copySystemConfiguration = true;
+  system.copySystemConfiguration = true;  # copies to nix store path
 
   #-----
   # boot
@@ -50,18 +91,26 @@
 
   services.xserver =
   {
-    enable                              = true;
-    desktopManager.gnome3.enable        = true;
-    displayManager.gdm.enable           = true;
-    displayManager.gdm.autoLogin.enable = true;
-    displayManager.gdm.autoLogin.user   = "hxrts";
+    enable                          = true;
+    windowManager.i3.enable         = true;
+    windowManager.i3.package        = pkgs.i3-gaps;
+    #windowManager.i3.configFile     = /home/hxrts/.config/i3/config;
+    displayManager.slim.enable      = true;
+    #displayManager.slim.autoLogin   = true;
+    #displayManager.slim.defaultUser = "hxrts";
+    desktopManager = {
+      xfce.enable                   = false;
+      xterm.enable                  = false;
+    };
   };
+
+#  services.xserver.displayManager.gdm.debug = true
 
   #------
   # I / O
   #------
 
-  services.dbus.socketActivated = true;
+#  services.dbus.socketActivated = true;
 
   services.xserver.libinput =
   {
@@ -94,11 +143,14 @@
   services.xserver.autoRepeatInterval = 30;
 
   services.xserver.layout     = "us";
-  services.xserver.xkbOptions = "caps:ctrl";
+  services.xserver.xkbOptions = "caps:swapctrl";
 
   i18n =
   {
-    consoleFont   = "Lat2-Terminus16";
+    #consoleKeyMap = (pkgs.writeText "keys.map"
+    #''
+    #  keycode 66 = Control
+    #'');
     consoleKeyMap = "us";
     defaultLocale = "en_US.UTF-8";
   };
@@ -136,10 +188,10 @@
       {
         listen 80 default_server;
         listen [::]:80 default_server;
-        root /var/www/researchtactics.com;
+        root /var/www/;
         index index.html;
-        server_name researchtactics.com www.researchtactics.com;
-        location /
+        server_name test.com www.test.com;
+        location /test
         {
           try_files $uri $uri/ =404;
         }
@@ -151,27 +203,31 @@
 
   networking.hostName              = "earth";
   networking.networkmanager.enable = true;
+  networking.networkmanager.packages = [ pkgs.networkmanagerapplet ];
 
   networking.firewall =
   {
-    enable            = true;
-    allowPing         = true;
-    allowedUDPPorts   = [ 80 8000 ];
-    allowedTCPPorts   = [ 80 443 8000 ];
+    enable               = true;
+    allowPing            = true;
+    allowedUDPPortRanges =
+    [
+      { from = 60000; to = 61000; }  # mosh
+    ];
+    allowedTCPPorts =
+    [
+      80   # SSH
+      443  # TLS / SSL
+    ];
   };
 
   services.openssh.enable = true;
-
-  programs.mtr.enable = true;
 
   #---------
   # terminal
   #---------
 
-  environment.sessionVariables = { EDITOR = "vim"; };
-
+  programs.vim.defaultEditor = true;
   programs.bash.enableCompletion = true;
-  # programs.gnupg.agent = { enable = true; enableSSHSupport = true; };
 
   #---------
   # packages
@@ -182,31 +238,71 @@
   environment.systemPackages = let
     moduleSys = with pkgs;
     [
-      (haskell.packages.ghc802.ghcWithHoogle (self :
-      [
-        self.ghc
-        self.hindent
-        self.xmonad-contrib
-        self.xmonad-extras
-        self.xmonad
-        self.xmobar
-        self.alex
-        self.happy
-        self.hlint
-        self.zlib
-        self.stack
-        self.cabal-install
-        self.cabal2nix
-        self.packdeps
-        self.stylish-haskell
-        self.pandoc
-        self.ghc-mod
-        self.lens
-      ]))
-
       # haskell
+      haskellPackages.alex
+      haskellPackages.cabal-install
+      haskellPackages.happy
+      haskellPackages.hindent
+      haskellPackages.stack
+      haskellPackages.zlib
+      haskellPackages.hlint
+      haskellPackages.cabal2nix
+      haskellPackages.hoogle
+      haskellPackages.stylish-haskell
+      #haskellPackages.turtle
+
+      #haskellPackages.ghc-mod
+      haskell.compiler.ghc822
       hasklig
+      #hie-nix
       multi-ghc-travis
+
+      purescript
+      psc-package
+
+      python
+      pypi2nix
+      gfortran
+      blas
+      pkgconfig
+      freetype
+      libpng
+      #agg
+      python36Packages.scipy
+      python36Packages.numpy
+      python36Packages.certifi
+      python36Packages.chardet
+      python36Packages.click
+      python36Packages.decorator
+      python36Packages.flask
+      python36Packages.flask-cors
+      python36Packages.idna
+      python36Packages.itsdangerous
+      python36Packages.jinja2
+      python36Packages.markupsafe
+      python36Packages.pytz
+      python36Packages.requests
+      python36Packages.six
+      python36Packages.tzlocal
+      python36Packages.ujson
+      python36Packages.urllib3
+      python36Packages.werkzeug
+      #python36Packages.colorhash
+      python36Packages.pandas
+
+      nodePackages.tern
+
+      # scripting
+      closurecompiler
+      graphviz
+      rWrapper
+
+      # dhall
+      #dhall
+      #dhall-bash
+      #dhall-json
+      #dhall-nix
+      #dhall-text
 
       # printing
       cloud-print-connector
@@ -216,28 +312,23 @@
       gutenprintBin
       mfcj470dw-cupswrapper
 
-      # scripting
-      closurecompiler
-      graphviz
-      purescript
-      psc-package
-      python36Packages.xcffib
-      rWrapper
-
-      # navigation
-      albert
+      # window management
       dmenu
-      xmonad-with-packages
-      xmonad_log_applet_gnome2
+      rofi-unwrapped
+      rofi-pass
+      compton
 
       # communication
-      #signal-messenger
+      signal-desktop
       skype
       slack
+      tdesktop  # telegram
+      riot-web
 
       # security
       browserpass
       pass
+      gnupg  # needed for browserpass https://github.com/NixOS/nixpkgs/issues/33748
 
       # crypto
       certbot
@@ -246,14 +337,24 @@
       pinentry
       solc
 
+      # sound
+      alsaLib
+      alsaPlugins
+      alsaTools
+      alsaUtils
+      apulse
+      qastools
+      pavucontrol
+      pulseaudioFull
+
       # media
       audacity
       blender
       gimp
       imagemagick
       inkscape
-      krita
       lame.lib
+      mpd_clientlib
       picard
       rtorrent
       transmission_gtk
@@ -262,6 +363,9 @@
       xournal
 
       # term
+      alacritty              # rust-based terminal emulator
+      at                     # scheduling
+      gnome3.gnome-terminal
       automake
       binutils
       cmake
@@ -280,25 +384,26 @@
       nfs-utils
       pkgconfig
       sudo
+      scrot
       tmux
       tldr
       tree
       unrar
       unzip
-      #vimHugeX
       (import /home/hxrts/system/vim/vim.nix)
       xclip
+      zip
 
-      # emulation
+      # virtualization
+      docker
       playonlinux
-      travis
       urbit
       wine
       winetricks
 
       # web
-      chrome-gnome-shell
       curl
+      firefox
       google-chrome
       drive
       dropbox-cli
@@ -306,68 +411,61 @@
       ipfs
       mosh
       netcat
-      nodejs
-      npm2nix
-      selenium-server-standalone
+      networkmanager
+      networkmanagerapplet
       sshfsFuse
       styx
       tor
       torbrowser
       wget
+      wicd # command line network manager
       yarn
       xfce.thunar-dropbox-plugin
-      #uget
-      #openssl
-      #zlib.dev
-      #zlib.out
+
+      # node
+      nodejs
+      nodePackages.bower
+      nodePackages.grunt-cli
+      nodePackages.gulp
+      nodePackages.node2nix
 
       # txt
       ascii
       aspell
+      aspellDicts.en
       emojione
+      evince
       corefonts
       ghostscript
       ibus-engines.uniemoji
       libreoffice
       noto-fonts
       noto-fonts-emoji
+      texlive.combined.scheme-full
       xfontsel
       xlsfonts
       xpdf
 
+      #lightdm
+      #lightdm_qt
+      #lightdm_gtk_greeter
+
       # gnome
+      lxappearance
       arc-icon-theme
       arc-theme
-      evince
       font-manager
-      gnome2.libgnome
-      gnome3.gdm
       gnome3.gnome-characters
-      gnome3.gnome-nettool
-      gnome3.gnome-screenshot
-      gnome3.gnome_shell
-      gnome3.gnome-shell-extensions
-	    gnome3.gnome-software
-      gnome3.networkmanagerapplet
-      gnome3.gpaste
-      gtk-engine-murrine
-      gtk_engines
       paper-icon-theme
-      rhythmbox
-
-      # nix
-      nix-prefetch-git
-      nix-prefetch-scripts
-      nix-repl
-      nixops
-      nox
-
-      # emacs
-      emacs
-      emacs-all-the-icons-fonts
+      gnome3.gnome-shell
+      gnome3.gnome-shell-extensions
+      gnome3.gnome-tweak-tool
+      gsettings-qt
 
       # X
+      feh
       libinput
+      xorg.xbacklight  # brightness controls
       xlibs.xmessage
       xorg.xorgserver
       xorg-rgb
@@ -377,12 +475,47 @@
       xorg_sys_opengl
       xorg.xinput
       xinput_calibrator
+
+      # emacs
+      emacs
+      emacs-all-the-icons-fonts
+
+      # window management
+      arandr
+      conky
+      i3-gaps
+      i3blocks-gaps
+      i3lock-fancy
+      polybar
+      xfce.thunar
+
+      # nix
+      nix-prefetch-git
+      nix-prefetch-scripts
+      nix-repl
+      nixops
+      nox
+      pypi2nix
     ];
-    moduleEmacs   = import /home/hxrts/system/emacs/emacs.nix pkgs;
-    moduleR       = import /home/hxrts/system/r/r.nix         pkgs;
-    #moduleCurl    = import /home/hxrts/system/curl/curl.nix   pkgs;
+    moduleEmacs = import /home/hxrts/system/emacs/emacs.nix pkgs;
+    #moduleR     = import /home/hxrts/system/r/r.nix pkgs;
   in
-    moduleSys ++ moduleEmacs ++ moduleR; # ++ moduleCurl ++ moduleVim ++
+    moduleSys ++
+    moduleEmacs;
+
+  programs.browserpass.enable = true;
+
+  nixpkgs.overlays =
+    [(self: super:
+      {
+        polybar = super.polybar.override
+        {
+          i3GapsSupport = true;
+          mpdSupport = true;
+          alsaSupport = true;
+        };
+      }
+    )];
 
 
   #------
@@ -391,19 +524,21 @@
 
   users.extraUsers.hxrts =
   {
-    name  = "hxrts";
-    group = "users";
+    name        = "hxrts";
+    group       = "users";
     extraGroups =
     [
       "wheel"
       "networkmanager"
+      "audio"
       "disk"
       "systemmd-journal"
+      "nginx"
     ];
     createHome = true;
-    uid   = 1000;
-    home  = "/home/hxrts";
-    shell = "/run/current-system/sw/bin/bash";
+    uid        = 1000;
+    home       = "/home/hxrts";
+    shell      = "/run/current-system/sw/bin/bash";
   };
 
   security.sudo.wheelNeedsPassword = false;
@@ -418,9 +553,11 @@
     enableGhostscriptFonts = true;
     fonts = with pkgs;
     [
-      iosevka
+      corefonts
       emacs-all-the-icons-fonts
       emojione
+      font-awesome-ttf
+      iosevka
       noto-fonts
       noto-fonts-emoji
       source-code-pro
@@ -434,9 +571,5 @@
       serif     = [ "Source Serif Pro" ];
     };
   };
-
-  #----
-  # end
-  #----
 
 }

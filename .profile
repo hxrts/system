@@ -1,4 +1,9 @@
-# all shell instances
+#------------
+# environment
+#------------
+
+if [[ -z $PS1 ]]; then return; fi
+if [[ -n $IN_NIX_SHELL ]]; then return; fi
 
 #-----
 # path
@@ -18,27 +23,24 @@ export PATH="$PATH:$HOME/bin"
 # app aliases & defaults
 #-----------------------
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-alias tree="tree -C"
-=======
 alias tree='tree -C'
->>>>>>> arrange files by function
-=======
-alias tree='tree -C'
->>>>>>> bdb3cfd... arrange files by function
-alias ls='ls -ha --color=auto'
-alias open='gnome-open'
+alias ls='ls -h -a --color=auto'
+alias open='xdg-open'
 alias grep='grep --color'
-alias nix-search='nix-env -qa | grep'
-<<<<<<< HEAD
-<<<<<<< HEAD
+alias ps='ps -e'
+alias nix-search='nix-env -qaP | grep -i'
+alias nix-search-node='nix-env -qaPA "nixos.nodePackages" | grep -i'
+alias nix-rebuild='sudo nixos-rebuild switch'
+alias nix-update='(cd ~/nixpkgs && git fetch && git rebase)'
+alias nix-install='nix-env -iA'
+alias getip='ip route get 1 | awk '"'"'{print $NF;exit}'"'"
+alias xclip='xclip -selection c'
+alias end='pkill -f'
+alias network='nmtui'
 
 #--------
 # haskell
 #--------
-
-=======
 
 function volume { pactl -- set-sink-volume 0 $1'%'; }
 
@@ -46,16 +48,6 @@ function volume { pactl -- set-sink-volume 0 $1'%'; }
 # haskell
 #--------
 
->>>>>>> arrange files by function
-=======
-
-function volume { pactl -- set-sink-volume 0 $1'%'; }
-
-#--------
-# haskell
-#--------
-
->>>>>>> bdb3cfd... arrange files by function
 alias haskpkgs='nix-env -f "<nixpkgs>" -qaP -A haskellPackages'
 export PATH="$PATH:$HOME/.cabal/bin"
 
@@ -70,16 +62,16 @@ export SSH_KEY_PATH='~/.ssh/id_rsa'
 #-----------------
 
 # terra > mosh hxrts@terra.hxrts.com'
-alias terra='terra.hxrts.com'
-export terra='terra.hxrts.com'
+export terra='104.236.26.234'
+alias terra='mosh hxrts@104.236.26.234'
 
 # juno > ssh admin@juno.hxrts.com'
-alias juno='juno.hxrts.com'
 export juno='juno.hxrts.com'
+alias juno='ssh hxrts@juno.hxrts.com'
 
-# io > mosh root@165.227.91.157
-alias io='165.227.91.157'
+# io > mosh hxrts@165.227.91.157
 export io='165.227.91.157'
+alias io='mosh hxrts@165.227.91.157'
 
 # supertemporal >
 alias supertemporal='ssh -i ~/.ssh/supertemporal_id_rsa hxrts@supertempor.al'

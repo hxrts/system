@@ -2,8 +2,8 @@
 # startup options
 #----------------
 
-options(editor = 'subl')
-options(width = 150)
+options(editor = 'vim')
+options(width = 75)
 options(menu.graphics = FALSE)
 
 
@@ -11,45 +11,69 @@ options(menu.graphics = FALSE)
 # initialization options
 #-----------------------
 
-.First <- function() {
-  options(
-    repos = c( CRAN = 'http://cran.rstudio.com/', 'http://cran.r-project.org'),
-               browserNLdisabled = TRUE,
-               deparse.max.lines = 2 )
+.First <- function()
+{
+  options(repos = c(CRAN = 'http://cran.rstudio.com/', 'http://cran.r-project.org'),
+          browserNLdisabled = TRUE,
+          deparse.max.lines = 2 )
 }
 
 #--------------
 # load packages
 #--------------
 
-libs <- function() {
+libs <- function()
+{
 
     # masked packages
     suppressPackageStartupMessages(library(plyr))
     suppressPackageStartupMessages(library(data.table))
 
     # main packages
-    #library(crayon)
-    library(colorspace)
-    library(RColorBrewer)
-    #library(rlist)
-    #library(openxlsx)
-    #library(tidyxl)
-    library(ggplot2)
-    #library(gridExtra)
-    library(scales)
-    library(lazyeval)
-    #library(tidyverse)
-    #library(dplyr)
-    library(stringr)
-    library(tidyr)
-    library(ggplot2)
-    library(purrr)
-    library(tibble)
     library(broom)
-    library(matrixStats)
+    library(colorspace)
+    library(crayon)
+    suppressPackageStartupMessages(library(ggplot2))
+    library(gridExtra)
+    library(lazyeval)
+    suppressPackageStartupMessages(library(matrixStats))
+    library(openxlsx)
+    library(RColorBrewer)
+    library(readxl)
+    library(rlist)
+    library(scales)
+    library(stringr)
+    library(tibble)
+    library(tidyverse)
+    library(tidyxl)
 }
 
+packages.installed <- function()
+{
+  installed.packages() %>%
+  tbl_df %$%
+  Package %>%
+  sort %>%
+  unique %>%
+  data_frame(package = .)
+}
+
+packages.loaded <- function()
+{
+  loadedNamespaces() %>%
+  sort %>%
+  unique %>%
+  data_frame(package = .)
+}
+
+packages.available <- function()
+{
+  packages.installed() %>%
+  unlist %>%
+  list.filter(! . %in% unlist(packages.loaded())) %>%
+  unique %>%
+  data_frame(package = .)
+}
 
 #--------------------
 # R environment utils
@@ -197,8 +221,8 @@ opn <- function(path = '.') {
     }
 }
 
-subl <- function(path = '.') {
-	system(paste('subl', path))
+vim <- function(path = '.') {
+	system(paste('vim', path))
 }
 
 # list system files
@@ -224,7 +248,10 @@ source_rp <- function(){ source('~/gitProfiles/.Rprofile') }
 #-----------------
 
 # imgcat function
-img <- function(file){ system(str_c('imgcat ', file)) }
+img <- function(file)
+{
+  system(str_c('imgcat ', file))
+}
 
 
 #----------------------
@@ -240,10 +267,13 @@ if (interactive()) {
     libs()
 
     # set command line coloring
-    suppressMessages(setOutputColors(normal=8, negnum=7, zero=7, number=7, date=6, string=4, const=6, false=5, true=2, infinite=6, stderror=8, warn=c(3,0,3), error=c(1,0,1), verbose=FALSE, zero.limit=NA))
+#    suppressMessages(setOutputColors(normal=8, negnum=7, zero=7, number=7, date=6, string=4, const=6, false=5, true=2, infinite=6, stderror=8, warn=c(3,0,3), error=c(1,0,1), verbose=FALSE, zero.limit=NA))
 
     # emacs config
     require(grDevices)
     X11.options(type = 'cairo')
+    #x11(xpos=-1,ypos=-1)
+
+    try(fortunes::fortune(), silent = TRUE)
 
 }
