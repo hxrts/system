@@ -38,16 +38,11 @@ bindsym $mod+j focus down
 bindsym $mod+k focus up
 bindsym $mod+l focus right
 
-# window focus
-bindsym $mod+Shift+j move left
-bindsym $mod+Shift+k move down
-bindsym $mod+Shift+l move up
-bindsym $mod+Shift+semicolon move right
-
-bindsym $mod+Shift+Left move left
-bindsym $mod+Shift+Down move down
-bindsym $mod+Shift+Up move up
-bindsym $mod+Shift+Right move right
+# move window
+bindsym $mod+Alt+h move left
+bindsym $mod+Alt+j move down
+bindsym $mod+Alt+k move up
+bindsym $mod+Alt+l move right
 
 # screen geometry
 bindsym $mod+s         layout splith
@@ -77,14 +72,17 @@ bindsym --release Print       exec "scrot -s '/home/hxrts/Downloads/%s_%H.%M_%d.
 bindsym --release Shift+Print exec "scrot -m '/home/hxrts/Downloads/%s.%H.%M_%d.%m.%y_$wx$h.png'"
 
 # volume
-bindsym XF86AudioRaiseVolume exec "pactl set-sink-volume 0 +2%"
-bindsym XF86AudioLowerVolume exec "pactl set-sink-volume 0 -2%"
+bindsym XF86AudioRaiseVolume exec "pactl set-sink-volume 0 +4%"
+bindsym XF86AudioLowerVolume exec "pactl set-sink-volume 0 -4%"
 bindsym XF86AudioMute        exec "amixer set Master toggle"
 bindsym XF86AudioMicMute     exec "amixer -c 1 sset Mic toggle"
 
 # workspace navigation
 bindsym $mod+Right workspace next
 bindsym $mod+Left workspace prev
+
+bindsym $mod+Shift+l workspace next
+bindsym $mod+Shift+h workspace prev
 
 # define names for default workspaces
 set $ws1 "1"
@@ -191,3 +189,10 @@ floating_maximum_size 1000 x 1000
 exec_always --no-startup-id ~/.config/i3/polybar.sh &
 exec_always compton -f --config ~/.config/i3/compton.conf
 exec --no-startup-id feh --bg-fill ~/Pictures/backgrounds/slab.jpg
+
+# workspace assignments
+# exec --no-startup-id i3-msg 'workspace 3; exec /run/current-system/sw/bin/slack'
+exec --no-startup-id i3-msg 'workspace 2; exec /run/current-system/sw/bin/emacs'
+exec --no-startup-id i3-msg 'workspace 2; exec /run/current-system/sw/bin/gnome-terminal'
+exec --no-startup-id i3-msg 'workspace 1; exec /run/current-system/sw/bin/firefox'
+exec i3-wait layout tabbed

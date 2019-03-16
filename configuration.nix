@@ -30,26 +30,34 @@
 
   hardware.enableAllFirmware = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;  # Meltdown / Spectre patches
-  hardware.pulseaudio.enable = true;
-  hardware.pulseaudio.support32Bit = true;
-  sound.enable = true;
-  nixpkgs.config.pulseaudio = true;
+
+  powerManagement.enable = true;
 
   #------
   # clock
   #------
 
-  time.timeZone = "America/New_York";
+  #time.timeZone = "America/New_York";
+  time.timeZone = "CET";
+
+  #------
+  # sound
+  #------
+
+  sound.enable = true;
+  hardware.pulseaudio.enable = true;
+  hardware.pulseaudio.support32Bit = true;
+  nixpkgs.config.pulseaudio = true;
 
   #---------
   # channels
   #---------
 
-  nix.nixPath = [ "nixpkgs=/home/hxrts/nixpkgs" "nixos-config=/home/hxrts/system/configuration.nix" ];
-#  system.autoUpgrade.channel = https://nixos.org/channels/nixos-unstable;
+  #nix.nixPath = [ "nixpkgs=/home/hxrts/nixpkgs" "nixos-config=/home/hxrts/system/configuration.nix" ];
+  system.autoUpgrade.channel = https://nixos.org/channels/nixos-unstable;
   #system.autoUpgrade.channel = https://nixos.org/channels/nixos-17.09;
 
-#  system.stateVersion = "unstable";
+  system.stateVersion = "unstable";
   #system.stateVersion = "17.09";
 
 
@@ -69,11 +77,7 @@
   #  "nixos-config=/etc/nixos/configuration.nix"
   #];
 
-  #nixpkgs.overlays =
-  #[
-  #(import /home/hxrts/system/r/r.nix)
-  #];
-
+  #nixpkgs.overlays = [(import /home/hxrts/system/r/r.nix)];
 
   system.autoUpgrade.enable      = true;
   system.copySystemConfiguration = true;  # copies to nix store path
@@ -104,13 +108,9 @@
     };
   };
 
-#  services.xserver.displayManager.gdm.debug = true
-
   #------
   # I / O
   #------
-
-#  services.dbus.socketActivated = true;
 
   services.xserver.libinput =
   {
@@ -130,9 +130,12 @@
   };
 
 
-  hardware.trackpoint.enable       = true;
-  hardware.trackpoint.emulateWheel = true;
-  hardware.trackpoint.speed        = 280;
+  hardware.trackpoint = {
+    enable       = true;
+    emulateWheel = true;
+    speed        = 280;
+    sensitivity  = 140;
+  };
 
   services.xserver.multitouch.enable       = true;
   services.xserver.multitouch.invertScroll = true;
@@ -147,29 +150,27 @@
 
   i18n =
   {
-    #consoleKeyMap = (pkgs.writeText "keys.map"
-    #''
-    #  keycode 66 = Control
-    #'');
     consoleKeyMap = "us";
     defaultLocale = "en_US.UTF-8";
   };
 
-  services.printing.enable            = true;
-  services.printing.browsing          = true;
-  services.printing.listenAddresses   = [ "*:631" ];
-  services.printing.defaultShared     = true;
-  services.printing.drivers           =
-                                      [
-                                        pkgs.gutenprint
-                                        pkgs.cloud-print-connector
-                                        pkgs.system_config_printer
-                                        pkgs.cups-bjnp
-                                        pkgs.mfcj470dw-cupswrapper
-                                        pkgs.hplip
-                                        pkgs.cnijfilter2
-                                        pkgs.gutenprintBin
-                                      ];
+  services.printing = {
+    enable            = true;
+    browsing          = true;
+    listenAddresses   = [ "*:631" ];
+    defaultShared     = true;
+    drivers           =
+                        [
+                          pkgs.gutenprint
+                          pkgs.cloud-print-connector
+                          pkgs.system_config_printer
+                          pkgs.cups-bjnp
+                          pkgs.mfcj470dw-cupswrapper
+                          pkgs.hplip
+                          pkgs.cnijfilter2
+                          pkgs.gutenprintBin
+                        ];
+  };
 
   services.avahi.enable               = true;
   services.avahi.publish.enable       = true;
@@ -234,74 +235,18 @@
 
   nixpkgs.config.allowUnfree = true;
 
+  nixpkgs.config.permittedInsecurePackages = [
+    "samba-3.6.25"
+  ];
+
   environment.systemPackages = let
     moduleSys = with pkgs;
     [
-      # haskell
-      haskellPackages.alex
-      haskellPackages.cabal-install
-      haskellPackages.happy
-      haskellPackages.hindent
-      haskellPackages.stack
-      haskellPackages.zlib
-      haskellPackages.hlint
-      haskellPackages.cabal2nix
-      haskellPackages.hoogle
-      haskellPackages.stylish-haskell
-      #haskellPackages.turtle
-
-      #haskellPackages.ghc-mod
-      haskell.compiler.ghc822
-      hasklig
-      #hie-nix
-      multi-ghc-travis
-
-      purescript
-      psc-package
-
-      python
-      pypi2nix
-      gfortran
-      blas
-      pkgconfig
-      freetype
-      libpng
-      #agg
-      python36Packages.scipy
-      python36Packages.numpy
-      python36Packages.certifi
-      python36Packages.chardet
-      python36Packages.click
-      python36Packages.decorator
-      python36Packages.flask
-      python36Packages.flask-cors
-      python36Packages.idna
-      python36Packages.itsdangerous
-      python36Packages.jinja2
-      python36Packages.markupsafe
-      python36Packages.pytz
-      python36Packages.requests
-      python36Packages.six
-      python36Packages.tzlocal
-      python36Packages.ujson
-      python36Packages.urllib3
-      python36Packages.werkzeug
-      #python36Packages.colorhash
-      python36Packages.pandas
-
-      nodePackages.tern
-
-      # scripting
       closurecompiler
       graphviz
       rWrapper
 
-      # dhall
-      #dhall
-      #dhall-bash
-      #dhall-json
-      #dhall-nix
-      #dhall-text
+      cabal2nix
 
       # printing
       cloud-print-connector
@@ -312,15 +257,21 @@
       mfcj470dw-cupswrapper
 
       # communication
+      #patchwork
       signal-desktop
       skype
       slack
       tdesktop  # telegram
-      riot-web
+      zoom-us
 
       # security
+      bitwarden-cli
       browserpass
+      keybase
+      keybase-gui
+      kbfs
       pass
+      passff-host
       gnupg  # needed for browserpass https://github.com/NixOS/nixpkgs/issues/33748
 
       # crypto
@@ -343,6 +294,7 @@
       # media
       audacity
       blender
+      ffmpeg-full
       gimp
       imagemagick
       inkscape
@@ -364,6 +316,7 @@
       cmake
       coreutils
       dnsutils
+      eternal-terminal
       gcc_debug
       gnum4
       gnumake
@@ -375,6 +328,7 @@
       man
       libtool
       nfs-utils
+      pijul
       pkgconfig
       sudo
       scrot
@@ -390,9 +344,16 @@
       # virtualization
       docker
       playonlinux
-      urbit
       wine
       winetricks
+      urbit
+
+      # storage
+      ipfs
+      fuse
+      s3fs    # S3 fuse
+      s3cmd   # S3 command line tools
+      zeronet
 
       # web
       curl
@@ -401,7 +362,6 @@
       drive
       dropbox-cli
       gx
-      ipfs
       mosh
       netcat
       networkmanager
@@ -410,14 +370,20 @@
       tor
       torbrowser
       wget
-      yarn
+
+      xfce.gvfs
+      gvfs
+      samba
 
       # node
-      nodejs
-      nodePackages.bower
-      nodePackages.grunt-cli
-      nodePackages.gulp
+      nodejs-10_x
+      #nodePackages.bower
+      #nodePackages.grunt-cli
+      #nodePackages.gulp
       nodePackages.node2nix
+      #nodePackages.webpack
+      yarn
+      yarn2nix
 
       # txt
       ascii
@@ -447,9 +413,9 @@
       font-manager
       gnome3.gnome-characters
       paper-icon-theme
-      gnome3.gnome-shell
-      gnome3.gnome-shell-extensions
-      gnome3.gnome-tweak-tool
+      #gnome3.gnome-shell
+      #gnome3.gnome-shell-extensions
+      #gnome3.gnome-tweak-tool
       gsettings-qt
 
       # X
@@ -466,6 +432,9 @@
       xorg.xinput
       xinput_calibrator
 
+      # notifications
+      dunst
+
       #lightdm
       #lightdm_qt
       #lightdm_gtk_greeter
@@ -475,23 +444,22 @@
       conky
       compton
       dmenu
-      gnome2.pango  # i3 text rendering
+      #gnome2.pango  # i3 text rendering
+      #gnome3.nautilus
       i3-gaps
       i3blocks-gaps
       i3lock-fancy
       polybar
       rofi-unwrapped
       rofi-pass
-      xfce.thunar
-      xfce.thunar-dropbox-plugin
 
       # nix
       nix-prefetch-git
       nix-prefetch-scripts
-      nix-repl
       nixops
       nox
-      pypi2nix
+      #haskellPackages.nix-derivation
+      #haskellPackages.nix-diff
     ];
     moduleEmacs = import /home/hxrts/system/emacs/emacs.nix pkgs;
     #moduleR     = import /home/hxrts/system/r/r.nix pkgs;
@@ -500,6 +468,7 @@
     moduleEmacs;
 
   programs.browserpass.enable = true;
+  #services.gnome3.sushi.enable = true;
 
   nixpkgs.overlays =
     [(self: super:
@@ -513,6 +482,16 @@
       }
     )];
 
+  nixpkgs.config.packageOverrides = pkgs: {
+    xfce = pkgs.xfce // {
+      gvfs = pkgs.gvfs;
+    };
+  };
+
+  # fix trackpad scroll issue on wakeup
+  powerManagement.resumeCommands = ''
+    sudo modprobe -r psmouse && sudo modprobe psmouse
+  '';
 
   #------
   # users
@@ -538,6 +517,9 @@
   };
 
   security.sudo.wheelNeedsPassword = false;
+
+  services.keybase.enable = true;
+  services.kbfs.enable = true;
 
   #------
   # fonts

@@ -38,3 +38,4 @@ set -o vi
 
 source ~/.profile
 source ~/.local_profile
+

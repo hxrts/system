@@ -116,10 +116,10 @@ before layers configuration."
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Iosevka"
-                               :size 24
+                               :size 25
                                :weight regular
                                ; :width normal
-                               :powerline-scale 1.2)
+                               :powerline-scale 1.3)
    dotspacemacs-leader-key "SPC"
    ;; The key used for Emacs commands (M-x) (after pressing on the leader key).
    ;; (default "SPC")
@@ -313,6 +313,9 @@ executes and packages are loaded."
   ;; doom org mode
   (doom-themes-org-config)
 
+  ;; wrap at 80 characters
+  (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
+
   ;; native border "consumes" fringe pixel on right-most splits `window-divider' doesn't
   (setq-default window-divider-default-places t
                 window-divider-default-bottom-width 0
@@ -444,6 +447,14 @@ executes and packages are loaded."
 
   (setq haskell-process-wrapper-function
         (lambda (args) (apply 'nix-shell-command (nix-current-sandbox) args)))
+
+  ;; (setq haskell-process-type 'ghci
+  ;;       haskell-process-path-ghci "/home/ben/.nix-profile/bin/nix-shell"
+  ;;       haskell-process-args-ghci '("-I" "." "shell.nix" "--pure" "--command" "cabal configure; cabal repl"))
+
+  ;; projects should have a default.nix and a shell.nix
+
+  ;; snippet drops you into a nix shell with all the dependencies for the project you're working on. You can also (especially easy if you're using projectile) run compile with the command nix-shell -I . shell.nix --command "cabal configure; cabal build" which gives a list of type errors in the current project.
 
   ;;----
   ;; nix
