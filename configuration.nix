@@ -37,8 +37,8 @@
   # clock
   #------
 
-  #time.timeZone = "America/New_York";
-  time.timeZone = "CET";
+  time.timeZone = "America/New_York";
+  #time.timeZone = "CET";
 
   #------
   # sound
@@ -343,7 +343,7 @@
 
       # virtualization
       docker
-      playonlinux
+      #playonlinux
       wine
       winetricks
       urbit
@@ -397,7 +397,7 @@
       libreoffice
       noto-fonts
       noto-fonts-emoji
-      texlive.combined.scheme-full
+      #texlive.combined.scheme-full
       xfontsel
       xlsfonts
       xpdf
