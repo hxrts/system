@@ -1,0 +1,73 @@
+#=============================================================================
+# dark_powered.toml --- dark powered configuration example for SpaceVim
+# Copyright (c) 2016-2017 Wang Shidong & Contributors
+# Author: Wang Shidong < wsdjeg at 163.com >
+# URL: https://spacevim.org
+# License: GPLv3
+#=============================================================================
+
+# All SpaceVim option below [option] section
+[options]
+  bootstrap_before = "myspacevim#before"
+  automatic_update = 1
+  colorscheme = "one"
+  colorscheme_bg = "dark"
+  enable_guicolors = true
+  guifont = "SauceCodePro Nerd Font Mono:h11"
+  statusline_separator = 'arrow'
+  statusline_inactive_separator = 'arrow'
+  buffer_index_type = 4
+  enable_tabline_filetype_icon = true
+  enable_statusline_mode = false
+  relativenumber = false
+  bootstrap_after = "myspacevim#after"
+  filemanager = "nerdtree"
+  sidebar_direction = 'left'
+  filetree_direction = "left"
+
+[[layers]]
+  name = 'colorscheme'
+
+[[layers]]
+  name = 'autocomplete'
+  auto-completion-return-key-behavior = "complete"
+  auto-completion-tab-key-behavior = "smart"
+
+[[layers]]
+  name = 'shell'
+  default_position = 'bottom'
+  default_height = 30
+
+[[layers]]
+  name = 'gtags'
+
+[[layers]]
+  name = 'git'
+
+[[layers]]
+  name = 'github'
+
+[[layers]]
+  name = 'VersionControl'
+
+[[layers]]
+  name = 'lsp'
+  filetypes = [
+    "rust"
+  ]
+
+[[layers]]
+  name = 'lang#rust'
+
+[[layers]]
+  name = 'lang#javascript'
+
+[[layers]]
+  name = 'lang#markdown'
+
+[[layers]]
+  name = 'lang#latex'
+
+[[layers]]
+  name = 'lang#python'
+

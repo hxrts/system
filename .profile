@@ -9,6 +9,28 @@ if [[ -n $IN_NIX_SHELL ]]; then return; fi
 # path
 #-----
 
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+	. "$HOME/.bashrc"
+    fi
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ] ; then
+    PATH="$HOME/bin:$PATH"
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+
+
+export PATH="$HOME/.cargo/bin:$PATH"
+if [ -e /home/hxrts/.nix-profile/etc/profile.d/nix.sh ]; then . /home/hxrts/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+
 # ruby version manager
 export PATH="$PATH:$HOME/.rvm/bin"
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # load RVM as function
@@ -21,10 +43,14 @@ export PATH="$PATH:$HOME/bin"
 
 export WINEPREFIX="/home/$USER/prefix32"
 
+# required for haskell stack
+export PATH="/home/hxrts/.local/bin:$PATH"
+
 #-----------------------
 # app aliases & defaults
 #-----------------------
 
+alias vim='/usr/bin/nvim'
 alias tree='tree -C'
 alias ls='ls -h -a --color=auto'
 alias open='xdg-open'
